@@ -1,31 +1,21 @@
-# Этап сборки
-FROM golang:1.23 AS builder
+FROM golang:1.23-alpine AS builder
 
-# Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Копируем зависимости
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Копируем весь проект
 COPY . .
 
-# Сборка приложения
-RUN go build -o app .
+RUN go build -o main ./main.go
 
-# Финальный образ
-FROM debian:bullseye-slim
+FROM alpine:latest
 
-# Устанавливаем рабочую директорию
-WORKDIR /root/
+WORKDIR /root
 
-# Копируем собранное приложение
-COPY --from=builder /app/app .
-COPY config.env .
+COPY --from=builder /app/main .
+COPY --from=builder /app/config.env . 
 
-# Указываем порт, который будет слушать приложение
 EXPOSE 8080
 
-# Запуск приложения
-CMD ["./app"]
+CMD ["./main", "./config.env"] 

@@ -13,26 +13,6 @@ type WalletReq struct {
 	Amount        float64 `json:"amount" validate:"required,gt=0"`
 }
 
-// func (w *Wallet) UpdateBalance(tx *gorm.DB, operationType string, amount float64) error {
-// 	// Проверяем тип операции и изменяем баланс
-// 	if operationType == "DEPOSIT" {
-// 		w.Balance += amount
-// 	} else if operationType == "WITHDRAW" {
-// 		if w.Balance < amount {
-// 			return gorm.ErrInvalidData // Недостаточно средств
-// 		}
-// 		w.Balance -= amount
-// 	} else {
-// 		return gorm.ErrInvalidData // Неверный тип операции
-// 	}
-
-// 	// Обновляем баланс в базе данных с условием WHERE
-// 	err := tx.Model(&Wallet{}).
-// 		Where("UUID = ?", w.UUID).
-// 		Update("balance", w.Balance).Error
-// 	return err
-// }
-
 func (w *Wallet) UpdateBalance(tx *gorm.DB, operationType string, amount float64) error {
 	if operationType == "WITHDRAW" && w.Balance < amount {
 		return gorm.ErrInvalidData
