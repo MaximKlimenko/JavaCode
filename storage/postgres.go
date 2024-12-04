@@ -39,7 +39,7 @@ func NewConnection(config *Config) (*gorm.DB, error) {
 	if err != nil {
 		log.Fatalf("Failed to initialize DB connection: %v", err)
 	}
-	sqlDB.SetMaxOpenConns(100)                // Максимальное количество соединений
+	sqlDB.SetMaxOpenConns(200)                // Максимальное количество соединений
 	sqlDB.SetMaxIdleConns(50)                 // Максимальное количество простаивающих соединений
 	sqlDB.SetConnMaxLifetime(time.Minute * 5) // Максимальное время жизни соединения
 	return db, err

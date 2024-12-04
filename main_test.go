@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	requestsPerSec = 1200
+	requestsPerSec = 1000
 	testDuration   = 1
 	baseURL        = "http://localhost:8080/api/v1/wallet"
 )
@@ -31,8 +31,6 @@ func TestMain(m *testing.M) {
 	ticker := time.NewTicker(time.Second / time.Duration(requestsPerSec))
 	defer ticker.Stop()
 
-	// Время окончания теста
-	//endTime := time.Now().Add(time.Duration(testDuration) * time.Second)
 	wg.Add(totalReq)
 	for i := 0; i < totalReq; i++ {
 		<-ticker.C

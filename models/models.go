@@ -1,26 +1,40 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"errors"
+	"fmt"
+
+	"gorm.io/gorm"
+)
 
 type Wallet struct {
-	UUID    string  `gorm:"primaryKey;column:id"`
+	ID      string  `gorm:"primaryKey;column:id"`
 	Balance float64 `gorm:"not null"`
 }
 
 type WalletReq struct {
-	WalletID      string  `json:"walletId" validate:"required,uuid"`
+	WalletID      string  `json:"walletId" validate:"required,id"`
 	OperationType string  `json:"operationType" validate:"required,oneof=DEPOSIT WITHDRAW"`
 	Amount        float64 `json:"amount" validate:"required,gt=0"`
 }
 
 func (w *Wallet) UpdateBalance(tx *gorm.DB, operationType string, amount float64) error {
-	if operationType == "WITHDRAW" && w.Balance < amount {
-		return gorm.ErrInvalidData
-	}
-	if operationType == "DEPOSIT" {
+	switch operationType {
+	case "DEPOSIT":
 		w.Balance += amount
-	} else if operationType == "WITHDRAW" {
+	case "WITHDRAW":
+		if w.Balance < amount {
+			return gorm.ErrInvalidData // Недостаточно средств
+		}
 		w.Balance -= amount
+	default:
+		return errors.New("invalid operation type") // Некорректная операция
 	}
-	return tx.Save(w).Error
+
+	// Сохраняем изменения в базе
+	if err := tx.Save(w).Error; err != nil {
+		return fmt.Errorf("failed to save wallet: %w", err)
+	}
+
+	return nil
 }

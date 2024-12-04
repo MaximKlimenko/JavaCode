@@ -19,24 +19,22 @@ type Repository struct {
 	DB *gorm.DB
 }
 
-func (r *Repository) GetWalletByID(context *fiber.Ctx) error {
+func (r *Repository) GetWalletByID(ctx *fiber.Ctx) error {
 	walletModel := models.Wallet{}
-	id := context.Params("WALLET_UUID")
-	fmt.Println(id)
+	id := ctx.Params("WALLET_UUID")
 	if id == "" {
-		context.Status(http.StatusInternalServerError).JSON(
+		ctx.Status(http.StatusInternalServerError).JSON(
 			&fiber.Map{"message": "id can't be empty"})
 		return nil
 	}
-	err := r.DB.First(&walletModel, "UUID = ?", id).Error
+	err := r.DB.First(&walletModel, "ID = ?", id).Error
 	if err != nil {
-		context.Status(http.StatusBadRequest).JSON(
+		ctx.Status(http.StatusBadRequest).JSON(
 			&fiber.Map{"message": "could not get the wallet"})
-		fmt.Println(err)
 		return err
 	}
 
-	context.Status(http.StatusOK).JSON(
+	ctx.Status(http.StatusOK).JSON(
 		&fiber.Map{
 			"message": "balance was received successfully",
 			"balance": walletModel.Balance})
@@ -60,7 +58,7 @@ func (r *Repository) ChageBalance(ctx *fiber.Ctx) error {
 	err := r.DB.Transaction(func(tx *gorm.DB) error {
 		// Получаем или создаём кошелёк с блокировкой строки
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
-			FirstOrCreate(&wallet, models.Wallet{UUID: req.WalletID}).Error; err != nil {
+			FirstOrCreate(&wallet, models.Wallet{ID: req.WalletID}).Error; err != nil {
 			return err
 		}
 
@@ -86,7 +84,7 @@ func (r *Repository) ChageBalance(ctx *fiber.Ctx) error {
 
 	// Возвращаем успешный ответ
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
-		"walletId": wallet.UUID,
+		"walletId": wallet.ID,
 		"balance":  wallet.Balance,
 	})
 }
